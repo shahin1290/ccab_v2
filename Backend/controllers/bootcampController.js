@@ -144,6 +144,7 @@ exports.newBootcamp = async (req, res, next) => {
     // default new bootcamp
     const bootcamp = new Bootcamp()
     bootcamp.name = `bootcamp ${bootcamps.length + 1}`
+    bootcamp.category = 'Web Development'
     bootcamp.description =
       'The essence of this board is to provide a high-level overview of your bootcamp. This is the place to plan and track your progress. '
     bootcamp.mentor = req.user._id

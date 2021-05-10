@@ -12,7 +12,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { createOrder } from '../../redux/actions/orderAction'
 import { getCourseDetails } from '../../redux/actions/courseAction'
 import Loader from '../layout/Loader'
-import { Tabs, Tab, Card } from 'react-bootstrap'
+import { Tabs, Tab, Card, Form, Col } from 'react-bootstrap'
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY)
 
@@ -20,10 +20,16 @@ const CheckoutForm = (props) => {
   const stripe = useStripe()
   const elements = useElements()
   const dispatch = useDispatch()
-  const [name, setName] = useState('')
   const ID = props.match.params.bootcampId
 
   const { course } = useSelector((state) => state.courseDetails)
+
+  //address details
+  const [name, setName] = useState('')
+  const [street, setStreet] = useState('')
+  const [city, setCity] = useState('')
+  const [country, setCountry] = useState('')
+  const [zip, setZip] = useState('')
 
   useEffect(() => {
     dispatch(getCourseDetails(ID))
@@ -35,7 +41,14 @@ const CheckoutForm = (props) => {
     e.preventDefault()
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
-      card: elements.getElement(CardNumberElement)
+      card: elements.getElement(CardNumberElement),
+      billing_details: {
+        name,
+        address: {
+          country,
+          postal_code: zip
+        }
+      }
     })
 
     if (error) {
@@ -44,7 +57,7 @@ const CheckoutForm = (props) => {
       dispatch(
         createOrder(ID, {
           token: paymentMethod.id,
-          amount: course && course.price
+          amount: course && course.price * 1.25
         })
       )
     }
@@ -61,20 +74,10 @@ const CheckoutForm = (props) => {
               <h4>Checkout</h4>
             </div>
             <div className="checkout-section">
-              <h6>Billing Details</h6>
-
               {/* Checkout Form */}
 
               <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                <textarea
-                  className=""
-                  name="message"
-                  placeholder="Address"
-                ></textarea>
-              </div>
-
-              <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                <h2>Select Payment Method</h2>
+                <h3>Select Payment Method</h3>
 
                 {loading && <Loader />}
                 {error ? (
@@ -87,21 +90,18 @@ const CheckoutForm = (props) => {
               </div>
 
               {/* Signup Info Tabs*/}
-              <div className="checkout-info-tabs col-lg-12 col-md-12 col-sm-12">
+              <div className="checkout-info-tabs col-lg-9 col-md-12 col-sm-12">
                 <Tabs defaultActiveKey="card" transition={false}>
-                  <Tab
-                    eventKey="card"
-                    title="Credit/ Debit card"
-                    class="checkout-tabs tabs-box"
-                  >
-                    <Card>
-                      <form
-                        className="checkout-info-tabs col-lg-12 col-md-12 col-sm-12"
-                        onSubmit={submitHandler}
+                  <Tab eventKey="card" title="Credit/ Debit card">
+                    <form onSubmit={submitHandler}>
+                      <h4 style={{ padding: '30px 0 5px 0' }}>
+                        Payment Information
+                      </h4>
+                      <div
+                        className="row clearfix"
                         style={{
-                          paddingTop: '20px',
-                          display: 'grid',
-                          'grid-template-columns': '1fr 1fr '
+                          boxShadow: ' 0 2px 2px 0 rgba(0,0,0,0.2)',
+                          backgroundColor: 'white'
                         }}
                       >
                         <div class="form-group col-lg-6 col-md-12 col-sm-12">
@@ -162,18 +162,106 @@ const CheckoutForm = (props) => {
                             <CardCvcElement />
                           </div>
                         </div>
+                      </div>
+                      <h4 style={{ padding: '30px 0 5px 0' }}>
+                        Billing Address
+                      </h4>
+                      <div
+                        className="row clearfix"
+                        style={{
+                          boxShadow: ' 0 2px 2px 0 rgba(0,0,0,0.2)',
+                          backgroundColor: 'white'
+                        }}
+                      >
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>Street</label>
 
-                        <div style={{ padding: '20px 0' }}>
-                          <button
-                            className="theme-btn btn-style-one"
-                            type="submit"
-                            name="submit-form"
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.3em',
+                              backgroundColor: 'white'
+                            }}
                           >
-                            <span className="txt">Confirm Checkout</span>
-                          </button>
+                            <input
+                              type="text"
+                              value={street}
+                              placeholder="542 W. 15th Street"
+                              required
+                              onChange={(e) => setStreet(e.target.value)}
+                            />
+                          </div>
                         </div>
-                      </form>
-                    </Card>
+
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>City</label>
+
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.3em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={city}
+                              placeholder="New York"
+                              required
+                              onChange={(e) => setCity(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>Country</label>
+
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.3em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={country}
+                              placeholder="USA"
+                              required
+                              onChange={(e) => setCountry(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>Zip</label>
+
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.3em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={zip}
+                              placeholder="58648"
+                              required
+                              onChange={(e) => setZip(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ padding: '20px 0' }}>
+                        <button
+                          className="theme-btn btn-style-one"
+                          type="submit"
+                          name="submit-form"
+                        >
+                          <span className="txt">Confirm Checkout</span>
+                        </button>
+                      </div>
+                    </form>
                   </Tab>
                   <Tab eventKey="bank" title="Bank Transfer"></Tab>
                   <Tab eventKey="paypal" title="Paypal / Payoneer"></Tab>
@@ -195,14 +283,20 @@ const CheckoutForm = (props) => {
                   <div className="order-box">
                     <ul>
                       <li className="clearfix">
-                        Basic Plan <span className="pull-right">$29</span>
+                        Basic Plan{' '}
+                        <span className="pull-right">${course.price}</span>
                       </li>
                       <li className="clearfix">
-                        Tax <span className="pull-right">$3</span>
+                        Tax(25% Sweden){' '}
+                        <span className="pull-right">
+                          ${course.price * 0.25}
+                        </span>
                       </li>
                       <li className="clearfix">
                         <strong>Total</strong>{' '}
-                        <span className="pull-right">$32</span>
+                        <span className="pull-right">
+                          ${course.price * 1.25}
+                        </span>
                       </li>
                     </ul>
                   </div>
