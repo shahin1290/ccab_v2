@@ -4,13 +4,15 @@ import {
   useStripe,
   useElements,
   Elements,
-  CardElement
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement
 } from '@stripe/react-stripe-js'
 import { useSelector, useDispatch } from 'react-redux'
 import { createOrder } from '../../redux/actions/orderAction'
 import { getCourseDetails } from '../../redux/actions/courseAction'
 import Loader from '../layout/Loader'
-import { Tabs, Tab } from 'react-bootstrap'
+import { Tabs, Tab, Card } from 'react-bootstrap'
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY)
 
@@ -18,14 +20,8 @@ const CheckoutForm = (props) => {
   const stripe = useStripe()
   const elements = useElements()
   const dispatch = useDispatch()
+  const [name, setName] = useState('')
   const ID = props.match.params.bootcampId
-
-  console.log(ID)
-
-  const [cvc, setCvc] = useState('')
-  const [expYear, setExpYear] = useState('')
-  const [expMonth, setExpMonth] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
 
   const { course } = useSelector((state) => state.courseDetails)
 
@@ -39,7 +35,7 @@ const CheckoutForm = (props) => {
     e.preventDefault()
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
-      card: elements.getElement(CardElement)
+      card: elements.getElement(CardNumberElement)
     })
 
     if (error) {
@@ -51,18 +47,6 @@ const CheckoutForm = (props) => {
           amount: course && course.price
         })
       )
-    }
-  }
-
-  const style = {
-    base: {
-      fontFamily: 'Nunito , sans-serif',
-      fontSize: '1.2rem',
-      color: '#495057',
-      '::placeholder': {
-        color: '#6C757D',
-        opacity: 1
-      }
     }
   }
 
@@ -80,98 +64,120 @@ const CheckoutForm = (props) => {
               <h6>Billing Details</h6>
 
               {/* Checkout Form */}
-              <div className="checkout-form">
-                <form onSubmit={submitHandler}>
-                  <div className="row clearfix">
-                    <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                      <span className="icon flaticon-edit-3"></span>
-                      <textarea
-                        className=""
-                        name="message"
-                        placeholder="Address"
-                      ></textarea>
-                    </div>
 
-                    <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                      <h2>Select Payment Method</h2>
+              <div className="col-lg-12 col-md-12 col-sm-12 form-group">
+                <textarea
+                  className=""
+                  name="message"
+                  placeholder="Address"
+                ></textarea>
+              </div>
 
-                      {loading && <Loader />}
-                      {error ? (
-                        <p className="text-danger bg-light p-2 ">{error}</p>
-                      ) : success ? (
-                        <p className="text-success bg-light p-2 ">
-                          Order created successfully
-                        </p>
-                      ) : null}
-                    </div>
+              <div className="col-lg-12 col-md-12 col-sm-12 form-group">
+                <h2>Select Payment Method</h2>
 
-                    {/* Signup Info Tabs*/}
-                    <div className="checkout-info-tabs col-lg-12 col-md-12 col-sm-12">
-                      <Tabs
-                        defaultActiveKey="home"
-                        transition={false}
-                        id="noanim-tab-example"
+                {loading && <Loader />}
+                {error ? (
+                  <p className="text-danger bg-light p-2 ">{error}</p>
+                ) : success ? (
+                  <p className="text-success bg-light p-2 ">
+                    Order created successfully
+                  </p>
+                ) : null}
+              </div>
+
+              {/* Signup Info Tabs*/}
+              <div className="checkout-info-tabs col-lg-12 col-md-12 col-sm-12">
+                <Tabs defaultActiveKey="card" transition={false}>
+                  <Tab
+                    eventKey="card"
+                    title="Credit/ Debit card"
+                    class="checkout-tabs tabs-box"
+                  >
+                    <Card>
+                      <form
+                        className="checkout-info-tabs col-lg-12 col-md-12 col-sm-12"
+                        onSubmit={submitHandler}
+                        style={{
+                          paddingTop: '20px',
+                          display: 'grid',
+                          'grid-template-columns': '1fr 1fr '
+                        }}
                       >
-                        <Tab eventKey="card" title="Credit/ Debit card">
-                          <div className="row clearfix">
-                            {/* Form Group */}
-                            <div className="form-group col-lg-6 col-md-12 col-sm-12">
-                              <label>Holder Name</label>
-                              <input
-                                type="text"
-                                name="username"
-                                value=""
-                                placeholder="First Name"
-                              />
-                            </div>
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>Holder Name</label>
 
-                            {/* Form Group */}
-                            <div className="form-group col-lg-6 col-md-12 col-sm-12">
-                              <label>Holder Name</label>
-
-                              <CardElement />
-                            </div>
-
-                            <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                              <h2>Order Details</h2>
-                            </div>
-
-                            <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                              {/* Order Box */}
-                              <div className="order-box">
-                                <ul>
-                                  <li className="clearfix">
-                                    Basic Plan{' '}
-                                    <span className="pull-right">$29</span>
-                                  </li>
-                                  <li className="clearfix">
-                                    Tax <span className="pull-right">$3</span>
-                                  </li>
-                                  <li className="clearfix">
-                                    <strong>Total</strong>{' '}
-                                    <span className="pull-right">$32</span>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-
-                            <div className="col-lg-12 col-md-12 col-sm-12 form-group text-right">
-                              <button
-                                className="theme-btn btn-style-one"
-                                type="submit"
-                                name="submit-form"
-                              >
-                                <span className="txt">Confirm Checkout</span>
-                              </button>
-                            </div>
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.3em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={name}
+                              placeholder="Emily J Smith"
+                              required
+                              onChange={(e) => setName(e.target.value)}
+                            />
                           </div>
-                        </Tab>
-                        <Tab eventKey="bank" title="Bank Transfer"></Tab>
-                        <Tab eventKey="paypal" title="Paypal / Payoneer"></Tab>
-                      </Tabs>
-                    </div>
-                  </div>
-                </form>
+                        </div>
+
+                        <div class="form-group col-lg-6 col-md-12 col-sm-12">
+                          <label>Card Number</label>
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.5em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <CardNumberElement />
+                          </div>
+                        </div>
+
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                          <label>Expiration Date</label>
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.5em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <CardExpiryElement />
+                          </div>
+                        </div>
+
+                        <div class="form-group col-lg-6 col-md-6 col-sm-12">
+                          <label>CVC Code</label>
+                          <div
+                            style={{
+                              boxShadow: '0px 0px 10px rgba(0,0,0,0.10)',
+                              padding: '.5em',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <CardCvcElement />
+                          </div>
+                        </div>
+
+                        <div style={{ padding: '20px 0' }}>
+                          <button
+                            className="theme-btn btn-style-one"
+                            type="submit"
+                            name="submit-form"
+                          >
+                            <span className="txt">Confirm Checkout</span>
+                          </button>
+                        </div>
+                      </form>
+                    </Card>
+                  </Tab>
+                  <Tab eventKey="bank" title="Bank Transfer"></Tab>
+                  <Tab eventKey="paypal" title="Paypal / Payoneer"></Tab>
+                </Tabs>
               </div>
             </div>
           </div>
