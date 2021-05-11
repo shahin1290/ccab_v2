@@ -45,7 +45,9 @@ const CheckoutForm = (props) => {
       billing_details: {
         name,
         address: {
-          country,
+          line1: street,
+          state: country,
+          city,
           postal_code: zip
         }
       }

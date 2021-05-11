@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { getCourseList } from '../../redux/actions/courseAction'
@@ -7,24 +7,83 @@ import Loader from '../layout/Loader'
 
 export default function CourseGridScreen({ match }) {
   const dispatch = useDispatch()
-  const { userDetail } = useSelector((state) => state.userLogin)
-  const pageNumber = match.params.pageNumber || 1
+  const [currentPage, setCurrentPage] = useState([])
 
-  const { courseList, page, pages, loading, error } = useSelector(
+  const coursesPerPage = 3
+
+  const { userDetail } = useSelector((state) => state.userLogin)
+
+  const { courseList, loading, error } = useSelector(
     (state) => state.courseList
   )
 
+  /*******************Functions *************/
   const categoryArray = [...new Set(courseList.map((item) => item.category))]
 
-  console.log(categoryArray)
-
   const categoryCourses = (category) => {
-    return courseList.filter((couser) => couser.category === category)
+    const filteredCourses = courseList.filter(
+      (couser) => couser.category === category
+    )
+
+    const found = currentPage.find((el) => el.category === category)
+
+    let indexOfLastCourse
+
+    found
+      ? (indexOfLastCourse = found.pageNumber * coursesPerPage)
+      : (indexOfLastCourse = 1 * coursesPerPage)
+
+    const currentCourses = filteredCourses.slice(
+      indexOfLastCourse - coursesPerPage,
+      indexOfLastCourse
+    )
+
+    return currentCourses
   }
 
+  const pagination = (category) => {
+    const filteredCourses = courseList.filter(
+      (couser) => couser.category === category
+    )
+
+    let pageNumbers = []
+
+    for (
+      let i = 1;
+      i <= Math.ceil(filteredCourses.length / coursesPerPage);
+      i++
+    ) {
+      pageNumbers.push(i)
+    }
+
+    return pageNumbers
+  }
+
+  const paginate = (category, pageNumber) => {
+    const found = currentPage.map((el) =>
+      el.category !== category ? el : { ...el, pageNumber }
+    )
+
+    setCurrentPage(found)
+  }
+
+  const findPageNumber = (category) =>
+    currentPage.length &&
+    currentPage.find((page) => page.category === category).pageNumber
+
   useEffect(() => {
-    dispatch(getCourseList(pageNumber))
-  }, [dispatch, pageNumber])
+    dispatch(getCourseList())
+  }, [dispatch])
+
+  useEffect(() => {
+    const currentCoursesArray = []
+    categoryArray.map((course) => {
+      currentCoursesArray.push({ category: course, pageNumber: 1 })
+    })
+
+    setCurrentPage(currentCoursesArray)
+  }, [courseList])
+
   return (
     <>
       {/*End Page Title*/}
@@ -121,6 +180,54 @@ export default function CourseGridScreen({ match }) {
                               )
                             })}
                         </div>
+
+                        {/* Pagination  */}
+                        <div className="styled-pagination">
+                          <ul className="clearfix">
+                            <li className="prev">
+                              <a
+                                onClick={() => {
+                                  const pageNumber = findPageNumber(category)
+                                  pageNumber !== 1 &&
+                                    paginate(category, pageNumber - 1)
+                                }}
+                              >
+                                <span className="fa fa-angle-left"></span>{' '}
+                              </a>
+                            </li>
+                            {pagination(category).map((pageNumber) => {
+                              return (
+                                <li
+                                  key={pageNumber}
+                                  className={
+                                    findPageNumber(category) === pageNumber &&
+                                    'active'
+                                  }
+                                >
+                                  <a
+                                    onClick={() =>
+                                      paginate(category, pageNumber)
+                                    }
+                                  >
+                                    {pageNumber}
+                                  </a>
+                                </li>
+                              )
+                            })}
+
+                            <li className="next">
+                              <a
+                                onClick={() => {
+                                  const pageNumber = findPageNumber(category)
+                                  categoryCourses(category).length === 3 &&
+                                    paginate(category, pageNumber + 1)
+                                }}
+                              >
+                                <span className="fa fa-angle-right"></span>{' '}
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     )
                   })
@@ -130,30 +237,6 @@ export default function CourseGridScreen({ match }) {
               </div>
             </div>
           </div>
-
-          {/* Pagination  */}
-          {/* <div className="styled-pagination">
-            <ul className="clearfix">
-              <li className="prev">
-                <Link to={`/page/${page > 1 ? page - 1 : 1}`}>
-                  <span className="fa fa-angle-left"></span>{' '}
-                </Link>
-              </li>
-              {[...Array(pages).keys()].map((x) => (
-                <li className={x + 1 === page && 'active'}>
-                  <Link key={x + 1} to={`/page/${x + 1}`}>
-                    {x + 1}
-                  </Link>
-                </li>
-              ))}
-
-              <li className="next">
-                <Link to={`/page/${page === pages ? page : page + 1}`}>
-                  <span className="fa fa-angle-right"></span>{' '}
-                </Link>
-              </li>
-            </ul>
-          </div> */}
         </div>
       </div>
 

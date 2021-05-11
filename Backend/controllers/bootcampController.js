@@ -63,18 +63,25 @@ const createNewDays = async (updatedBootcamp) => {
 
 exports.getAllBootcamps = async (req, res, next) => {
   try {
-    const pageSize = 6
+    const pageSize = 5
     const page = Number(req.query.pageNumber) || 1
     const count = await Bootcamp.countDocuments()
     var bootcamps
     //console.log(req.user);
 
     console.log('normal user  request')
-    bootcamps = await Bootcamp.find({ published: true })
-      .limit(pageSize)
-      .skip(pageSize * (page - 1))
-      .populate('mentor', 'name _id')
-      .populate('students')
+
+    if (req.query.pageNumber) {
+      bootcamps = await Bootcamp.find({ published: true })
+        .limit(pageSize)
+        .skip(pageSize * (page - 1))
+        .populate('mentor', 'name _id')
+        .populate('students')
+    } else {
+      bootcamps = await Bootcamp.find({ published: true })
+        .populate('mentor', 'name _id')
+        .populate('students')
+    }
 
     if (!bootcamps.length)
       return res
