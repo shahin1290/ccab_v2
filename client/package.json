@@ -13,6 +13,7 @@
     "downloadjs": "^1.4.7",
     "jquery": "^3.6.0",
     "malihu-custom-scrollbar-plugin": "^3.1.5",
+    "plyr-react": "^3.0.8",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.3",
     "react-countup": "^4.3.3",

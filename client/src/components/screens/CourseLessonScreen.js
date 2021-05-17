@@ -7,6 +7,8 @@ import { Card, Tabs, Tab, Accordion } from 'react-bootstrap'
 import { getDayList } from '../../redux/actions/dayAction'
 import { AiOutlineBars } from 'react-icons/ai'
 import styled from 'styled-components'
+import Plyr from 'plyr-react'
+import 'plyr-react/dist/plyr.css'
 
 export default function CourseContentScreen({ match }) {
   const dispatch = useDispatch()
@@ -16,7 +18,7 @@ export default function CourseContentScreen({ match }) {
 
   const dayDetails = useSelector((state) => state.dayDetails)
   const { day } = dayDetails
-  console.log(day);
+  console.log(day)
   useEffect(() => {
     dispatch(getWeekList(id))
   }, [dispatch, id])
@@ -66,7 +68,7 @@ export default function CourseContentScreen({ match }) {
                 {day.name ? (
                   <div className="inner-column">
                     <div className="course-video-box">
-                      <div
+                      {/* <div
                         style={{
                           padding: '56.25% 0 0 0',
                           position: 'relative'
@@ -84,7 +86,23 @@ export default function CourseContentScreen({ match }) {
                           controls
                         
                         ></ReactPlayer>
-                      </div>
+                      </div> */}
+                      <Plyr
+                        source={{
+                          type: 'video',
+                          sources: [
+                            {
+                              src: day.video_path,
+                              provider: 'youtube'
+                            }
+                          ]
+                        }}
+                        options={
+                          {
+                            /* ... */
+                          }
+                        }
+                      />
                     </div>
 
                     {/* Intro Info Tabs*/}
@@ -93,7 +111,11 @@ export default function CourseContentScreen({ match }) {
                       <div className="intro-tabs tabs-box">
                         {/*Tab Btns*/}
                         <Tabs defaultActiveKey="content">
-                          <Tab eventKey="content" title="Content" style={{fontSize: "30px"}}>
+                          <Tab
+                            eventKey="content"
+                            title="Content"
+                            style={{ fontSize: '30px' }}
+                          >
                             <div
                               className="tabs-content"
                               style={{ padding: '0 15px' }}

@@ -119,7 +119,7 @@ export default function CourseGridScreen({ match }) {
                 ) : categoryArray.length ? (
                   categoryArray.map((category) => {
                     return (
-                      <div>
+                      <>
                         {/* Options View  */}
                         <div className="options-view">
                           <div className="clearfix">
@@ -182,7 +182,10 @@ export default function CourseGridScreen({ match }) {
                         </div>
 
                         {/* Pagination  */}
-                        <div className="styled-pagination">
+                        <div
+                          className="styled-pagination"
+                          style={{ marginBottom: '100px' }}
+                        >
                           <ul className="clearfix">
                             <li className="prev">
                               <a
@@ -228,7 +231,7 @@ export default function CourseGridScreen({ match }) {
                             </li>
                           </ul>
                         </div>
-                      </div>
+                      </>
                     )
                   })
                 ) : (

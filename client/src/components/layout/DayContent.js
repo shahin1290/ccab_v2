@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import Message from '../layout/Message'
@@ -10,10 +10,12 @@ import { RiPlayMiniFill } from 'react-icons/ri'
 import Loader from './Loader'
 import { getMyTaskList, getTaskList } from '../../redux/actions/taskAction'
 import { getMyQuizList, getQuizList } from '../../redux/actions/quizAction'
+import { getMyQuizAnswerList } from '../../redux/actions/quizAnswerAction'
 
 export default function DayContent({ weekId, bootcampId }) {
   const dispatch = useDispatch()
   const { userDetail } = useSelector((state) => state.userLogin)
+  const [show, setShow] = useState('')
 
   /****************redux store***************** */
 
@@ -25,9 +27,28 @@ export default function DayContent({ weekId, bootcampId }) {
   const { myTasks, loading: myTasksLoading, error: myTasksError } = taskListMy
 
   //get quiz list list for students
-  const { myQuizList, loading: quizLoading, error: quizError } = useSelector(
-    (state) => state.myQuizList
-  )
+  const {
+    myQuizList,
+    loading: quizLoading,
+    error: quizError
+  } = useSelector((state) => state.myQuizList)
+
+  // getting myAnswerList
+
+  const quizAnswerMyList = useSelector((state) => state.quizAnswerMyList)
+  const {
+    myQuizAnswers,
+    loading: answerListLoading,
+    error: answerListError,
+    success: answerListSuccess
+  } = quizAnswerMyList
+
+  const quizStatus = (quizId) => {
+    if (answerListSuccess && myQuizAnswers.length) {
+      const foundAnswer = myQuizAnswers.find((ans) => ans.quiz === quizId)
+      return foundAnswer
+    }
+  }
 
   //get task list for mentor_route
   const { tasks } = useSelector((state) => state.taskList)
@@ -74,6 +95,7 @@ export default function DayContent({ weekId, bootcampId }) {
     if (userDetail.name && userDetail.user_type === 'StudentUser') {
       dispatch(getMyTaskList())
       dispatch(getMyQuizList())
+      dispatch(getMyQuizAnswerList())
     }
 
     if (
@@ -88,36 +110,34 @@ export default function DayContent({ weekId, bootcampId }) {
 
   return (
     <>
-      <Card.Body>
+      <Card.Body
+        style={{ height: '400px', overflowY: 'scroll' }}
+        className="acc-content current"
+      >
         {dayList.length > 0 ? (
           dayList.map((day, index) => (
-            <div className="acc-content current">
-              <div className="content">
-                <div className="clearfix">
-                  <div className="pull-left">
-                    <button
-                      onClick={() => dispatch(getDayDetails(weekId, day._id))}
-                      className="lightbox-image play-icon "
+            <div style={{ padding: ' 0 0 20px 15px' }}>
+              <button
+                onClick={() => dispatch(getDayDetails(weekId, day._id))}
+                className="lightbox-image play-icon "
+              >
+                <div>
+                  <span
+                    className="fa fa-play"
+                    style={{ paddingTop: '10px' }}
+                  ></span>
+                  <Link to={`/course-content/${bootcampId}`}>{day.name}</Link>
+                  {userDetail.user_type !== 'StudentUser' && (
+                    <Link
+                      to={`/mentor-course-update/${weekId}/${day._id}`}
+                      style={{ marginLeft: '100px' }}
                     >
-                      <div>
-                        <span className="fa fa-play"></span>
-                        <Link to={`/course-content/${bootcampId}`}>
-                          {day.name}
-                        </Link>
-                        {userDetail.user_type !== 'StudentUser' && (
-                          <Link
-                            to={`/mentor-course-update/${weekId}/${day._id}`}
-                            style={{ marginLeft: '100px' }}
-                          >
-                            {' '}
-                            <i class="fas fa-edit">edit content</i>
-                          </Link>
-                        )}
-                      </div>
-                    </button>
-                  </div>
+                      {' '}
+                      <i class="fas fa-edit">edit content</i>
+                    </Link>
+                  )}
                 </div>
-              </div>
+              </button>
             </div>
           ))
         ) : (
@@ -125,66 +145,59 @@ export default function DayContent({ weekId, bootcampId }) {
         )}
         {filterWeeklyTask().length > 0 &&
           filterWeeklyTask().map((task) => (
-            <Link
-              to={
-                userDetail.user_type === 'StudentUser'
-                  ? `/assignment-details/${task.bootcamp._id}/${task._id}`
-                  : `/task-details/${task.bootcamp}/${task._id}`
-              }
-              style={{
-                display: 'flex'
-              }}
+            <div
+              className="lightbox-image play-icon"
+              style={{ padding: ' 0 0 20px 15px' }}
             >
-              <i
-                class="fas fa-thumbtack"
-                style={{
-                  fontSize: '18px',
-                  marginBottom: '15px'
-                }}
+              <span
+                className="fa fa-play "
+                style={{ paddingTop: '10px' }}
+              ></span>
+
+              <Link
+                to={
+                  userDetail.user_type === 'StudentUser'
+                    ? `/assignment-details/${task.bootcamp._id}/${task._id}`
+                    : `/task-details/${task.bootcamp}/${task._id}`
+                }
               >
-                <span
-                  style={{
-                    fontWeight: 'bold',
-                    padding: '0 8px',
-                    fontSize: '18px'
-                  }}
-                >
-                  Task: {task.projectName}
-                </span>
-              </i>
-            </Link>
+                <span>Task: {task.projectName}</span>
+              </Link>
+            </div>
           ))}
 
-        {filterWeeklyQuiz().length >0 &&
+        {filterWeeklyQuiz().length > 0 &&
           filterWeeklyQuiz().map((quiz) => (
-            <Link
-              to={
-                userDetail.user_type === 'StudentUser'
-                  ? `/quiz-answer/${quiz.bootcamp._id}/${quiz.week}/${quiz._id}`
-                  : `/mentor-show-quiz/${quiz.bootcamp}/${quiz.week}/${quiz._id}`
-              }
-              style={{
-                display: 'flex'
-              }}
+            <div
+              className="lightbox-image play-icon"
+              style={{ padding: ' 0 0 20px 15px' }}
             >
-              <i
-                class="far fa-question-circle"
-                style={{
-                  fontSize: '18px',
-                  marginBottom: '15px'
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 'bold',
-                    padding: '0 8px',
-                    fontSize: '18px'
-                  }}
+              <span
+                className="fa fa-play"
+                style={{ paddingTop: '10px' }}
+              ></span>
+
+              {userDetail.user_type === 'StudentUser' && (
+                <Link
+                  to={
+                    quizStatus(quiz._id) &&
+                    quizStatus(quiz._id).status === 'Not Sent'
+                      ? `/quiz/${quiz.bootcamp._id}/${quiz.week}/${quiz._id}`
+                      : `/quiz-answer/${quiz.bootcamp._id}/${quiz.week}/${quiz._id}`
+                  }
                 >
-                  Quiz: {quiz.name}
-                </span>
-              </i>
-            </Link>
+                  <span>Quiz: {quiz.name}</span>
+                </Link>
+              )}
+
+              {userDetail.user_type !== 'StudentUser' && (
+                <Link
+                  to={`/mentor-show-quiz/${quiz.bootcamp}/${quiz.week}/${quiz._id}`}
+                >
+                  <span>Quiz: {quiz.name}</span>
+                </Link>
+              )}
+            </div>
           ))}
       </Card.Body>
     </>
