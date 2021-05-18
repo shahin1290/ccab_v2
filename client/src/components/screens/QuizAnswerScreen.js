@@ -13,7 +13,6 @@ export default function QuizAnswerScreen({ match, location }) {
   const dispatch = useDispatch()
   const redirect = location.search ? location.search.split('=')[1] : '/profile'
 
-
   const {
     quiz,
     loading: quizLoading,
@@ -91,7 +90,9 @@ export default function QuizAnswerScreen({ match, location }) {
                           className="time-countdown-two clearfix"
                           data-countdown="2020/8/30"
                         ></div>
-                        <span className="minutes px-3 py-1 d-block text-light rounded-pill">{quiz.time} Minutes </span>
+                        <span className="minutes  py-1 d-block  rounded-pill">
+                          {quiz.time} Minutes{' '}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -108,12 +109,14 @@ export default function QuizAnswerScreen({ match, location }) {
                       quiz.question.map((q, index) => {
                         return (
                           <Card className="form-group">
+                            {quizStatus(quiz._id) &&
+                              quizStatus(quiz._id).status === 'Not Sent' &&
+                              history.push('/profile')}
                             <Card.Body>
                               <Card.Title>{q.content}</Card.Title>
 
                               {q.answers.map((a, i) => (
                                 <Card.Text key={a._id}>
-                                  {console.log(quizStatus(quiz._id))}
                                   <input
                                     type="radio"
                                     name={`Q - ${index}`}

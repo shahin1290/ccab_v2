@@ -118,7 +118,10 @@ export default function DayContent({ weekId, bootcampId }) {
           dayList.map((day, index) => (
             <div style={{ padding: ' 0 0 20px 15px' }}>
               <button
-                onClick={() => dispatch(getDayDetails(weekId, day._id))}
+                onClick={() => {
+                  setShow(day._id)
+                  dispatch(getDayDetails(weekId, day._id))
+                }}
                 className="lightbox-image play-icon "
               >
                 <div>
@@ -126,7 +129,15 @@ export default function DayContent({ weekId, bootcampId }) {
                     className="fa fa-play"
                     style={{ paddingTop: '10px' }}
                   ></span>
-                  <Link to={`/course-content/${bootcampId}`}>{day.name}</Link>
+                  <Link
+                    to={`/course-content/${bootcampId}`}
+                    style={{
+                      backgroundColor: show === day._id ? '#ffbfbe' : '',
+                      padding: '5px'
+                    }}
+                  >
+                    {day.name}
+                  </Link>
                   {userDetail.user_type !== 'StudentUser' && (
                     <Link
                       to={`/mentor-course-update/${weekId}/${day._id}`}
