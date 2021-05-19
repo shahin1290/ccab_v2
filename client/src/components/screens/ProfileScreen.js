@@ -10,6 +10,7 @@ import {
 import Message from '../layout/Message'
 import Assignments from '../layout/Assignments'
 import Quizzes from '../layout/Quizzes'
+import Purchases from '../layout/Purchases'
 import { Link } from 'react-router-dom'
 import Loader from '../layout/Loader'
 import { getMyAnswerList } from '../../redux/actions/answerAction'
@@ -338,6 +339,12 @@ export default function ProfileScreen() {
                   </div>
                 </div>
               </Tab>
+
+              {userDetail && userDetail.user_type === 'StudentUser' ? (
+                <Tab eventKey="Purchases" title="Purchases">
+                  <Purchases />
+                </Tab>
+              ) : null}
             </Tabs>
           </div>
         </div>

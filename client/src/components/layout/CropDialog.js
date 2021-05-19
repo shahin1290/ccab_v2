@@ -6,7 +6,7 @@ const CropDialog = ({open,onClose,children,onSave}) => {
     <>
       <Modal show={open} onHide={onClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Modal title</Modal.Title>
+          <Modal.Title>Crop Image</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>

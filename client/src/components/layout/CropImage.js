@@ -6,9 +6,9 @@ import CropDialog from './CropDialog'
 const PIXEL_RATIO = 4
 export default function CropImage(props) {
   const [crop, setCrop] = React.useState({
-    unit: 'px',
-    width: '200',
-    height: '200',
+    unit: '%',
+    width: '40',
+    height: '60',
   })
 
   const [src, setSrc] = React.useState()
