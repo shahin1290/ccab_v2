@@ -9,7 +9,6 @@ import QuizScreen from './components/screens/QuizScreen'
 import CourseContentScreen from './components/screens/CourseContentScreen'
 import QuizAnswerScreen from './components/screens/QuizAnswerScreen'
 import Checkout from './components/screens/Checkout'
-import Klarna from './components/screens/Klarna'
 
 import ErrorScreen from './components/screens/ErrorScreen'
 
@@ -212,12 +211,6 @@ function App() {
           exact
           path="/checkout/:bootcampId"
           component={Checkout}
-        ></StudentRoute>
-
-        <StudentRoute
-          exact
-          path="/klarna"
-          component={Klarna}
         ></StudentRoute>
 
         {/* default Routes for guests  */}
