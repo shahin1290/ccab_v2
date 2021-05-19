@@ -1,21 +1,50 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { userProfileUpdate,getProfile } from '../../redux/actions/userAction'
+import { userProfileUpdate, getProfile } from '../../redux/actions/userAction'
 import { useHistory } from 'react-router-dom'
+import { useDropzone } from 'react-dropzone'
 import Message from '../layout/Message'
+import CropImage from '../layout/CropImage'
 
 export default function EditProfile() {
   const dispatch = useDispatch()
   const history = useHistory()
 
-
-  const { loading, user, error:getuserProfileErr } = useSelector((state) => state.userProfile)
+  const {
+    loading,
+    user,
+    error: getuserProfileErr
+  } = useSelector((state) => state.userProfile)
   const { userDetail } = useSelector((state) => state.userLogin)
   const { updateSuccess, error } = useSelector((state) => state.userUpdate)
 
-  
+  const [selectedImageFile, setSelectedImageFile] = useState()
+  const [file, setFile] = React.useState()
+  const [preview, setPreview] = React.useState()
 
+  const onCropSave = ({ file, preview }) => {
+    setPreview(preview)
+    setFile(file)
+    setPreview(preview)
+    setFile(file)
+  }
+  const onDrop = React.useCallback((acceptedFiles) => {
+    const fileDropped = acceptedFiles[0]
+    if (fileDropped['type'].split('/')[0] === 'image') {
+      setSelectedImageFile(fileDropped)
+      return
+    }
+    setFile(fileDropped)
+    const previewUrl = URL.createObjectURL(fileDropped)
+    setPreview(previewUrl)
+  })
 
+  const { getRootProps, getInputProps } = useDropzone({
+    multiple: false,
+    onDrop
+  })
+
+  const { ref, ...rootProps } = getRootProps()
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -23,21 +52,17 @@ export default function EditProfile() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const name = firstName + ' ' + lastName
 
-
-
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(getProfile())
-  },[dispatch])
+  }, [dispatch])
 
   useEffect(() => {
-    if (user&& user.name) {
+    if (user && user.name) {
       setUserData()
-      console.log(user);
     }
-  
   }, [user])
 
-  const setUserData =()=>{
+  const setUserData = () => {
     const givenFirstName = user.name.split(' ').slice(0, -1).join(' ')
     const givenLastName = user.name.split(' ').slice(-1).join(' ')
     setFirstName(givenFirstName)
@@ -47,10 +72,20 @@ export default function EditProfile() {
   }
   const submitHandler = (e) => {
     e.preventDefault()
-    dispatch(userProfileUpdate({ name, email, phoneNumber }))
-    if (updateSuccess) {
-        history.push('/profile')
-      }
+    const formData = new FormData()
+    formData.append('avatar', file)
+    formData.append('email', email)
+    formData.append('name', name)
+    formData.append('phoneNumber', phoneNumber)
+
+    for (var pair of formData.entries()) {
+      console.log(pair[0] + ', ' + pair[1])
+    }
+
+    dispatch(userProfileUpdate(formData))
+    /*  if (updateSuccess) {
+      history.push('/profile')
+    } */
   }
 
   return (
@@ -78,10 +113,56 @@ export default function EditProfile() {
         />
         <div className="auto-container">
           <div className="row clearfix">
-          
-     
+            {/* Image Section */}
+            <div className="image-column col-lg-3 col-md-12 col-sm-12">
+              <div className="inner-column">
+                <div className="image">
+                  <img
+                    onLoad={() => URL.revokeObjectURL(preview)}
+                    src={
+                      preview
+                        ? preview
+                        : user.avatar
+                        ? `/uploads/Avatar/${user.avatar}`
+                        : 'https://via.placeholder.com/200x112'
+                    }
+                    alt="avatar"
+                  />
+                </div>
+                <div rootRef={ref}>
+                  <div
+                    {...rootProps}
+                    style={{
+                      height: 100,
+                      background: '#efefef',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderStyle: 'dashed',
+                      borderColor: '#aaa',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    <p>
+                      Drag 'n' drop image file here, or click to select file
+                    </p>
+                  </div>
+                </div>
+                {/*  <a href="#" className="theme-btn btn-style-three">
+                  <span className="txt">
+                    Upload Picture <i className="fa fa-angle-right" />
+                  </span>
+                </a>
+                <a href="#" className="theme-btn btn-style-two">
+                  <span className="txt">
+                    Delete Picture <i className="fa fa-angle-right" />
+                  </span>
+                </a> */}
+              </div>
+            </div>
             {/* Content Section */}
-            <div className="content-column col-lg-12 col-md-12 col-sm-12">
+            <div className="content-column col-lg-9 col-md-12 col-sm-12">
               <div className="inner-column">
                 {/* Edit Profile Info Tabs*/}
                 <div className="edit-profile-info-tabs">
@@ -95,7 +176,6 @@ export default function EditProfile() {
                       >
                         Overview
                       </li>
-               
                     </ul>
                     {/*Tabs Container*/}
                     <div className="tabs-content">
@@ -106,9 +186,18 @@ export default function EditProfile() {
                           <div className="title-box">
                             <h5>Edit Profile</h5>
                           </div>
+
                           {/* Profile Form */}
                           <div className="profile-form">
-                            {error && <Message>{error}</Message>}
+                            {error ? (
+                              <p className="text-danger bg-light p-2 ">
+                                {error}
+                              </p>
+                            ) : updateSuccess ? (
+                              <p className="text-success bg-light p-2 ">
+                                Profile Updated successfully
+                              </p>
+                            ) : null}
                             {/* Profile Form */}
                             <form onSubmit={submitHandler}>
                               <div className="row clearfix">
@@ -162,10 +251,8 @@ export default function EditProfile() {
                                   />
                                   <span className="icon flaticon-edit-1" />
                                 </div>
-                         
-                       
+
                                 <div className="col-lg-12 col-md-12 col-sm-12 form-group text-right">
-                  
                                   <button
                                     className="theme-btn btn-style-three"
                                     type="submit"
@@ -182,7 +269,6 @@ export default function EditProfile() {
                           </div>
                         </div>
                       </div>
-               
                     </div>
                   </div>
                 </div>
@@ -190,6 +276,7 @@ export default function EditProfile() {
             </div>
           </div>
         </div>
+        <CropImage onSave={onCropSave} selectedFile={selectedImageFile} />
       </section>
       {/* End Profile Section */}
     </>
